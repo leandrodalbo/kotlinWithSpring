@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: firsTimeWithKotlin
+
+message: hello from kotling universe
+
