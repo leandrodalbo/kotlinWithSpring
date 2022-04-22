@@ -1,3 +1,5 @@
+package controller
+
 import com.ktprj.controller.HelloController
 import com.ktprj.service.HelloService
 import com.ninjasquad.springmockk.MockkBean
