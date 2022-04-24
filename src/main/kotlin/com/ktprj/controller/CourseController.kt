@@ -20,8 +20,8 @@ class CourseController(val courseService: CourseService) {
 
     @GetMapping("/all")
     @ResponseStatus(HttpStatus.OK)
-    fun getAllCourses(): List<CourseDto> {
-        return courseService.getAll()
+    fun getAllCourses(@RequestParam("with_name_like", required = false) value: String?): List<CourseDto> {
+        return courseService.getAll(value ?: "")
     }
 
     @PutMapping("/update/{id}")

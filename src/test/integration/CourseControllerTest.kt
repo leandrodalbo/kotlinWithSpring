@@ -1,7 +1,9 @@
 import com.ktprj.KtApiApplication
 import com.ktprj.dto.CourseDto
 import com.ktprj.entities.Course
+import com.ktprj.entities.Instructor
 import com.ktprj.repository.CourseRepository
+import com.ktprj.repository.InstructorRepository
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -20,28 +22,34 @@ class CourseControllerTest {
     lateinit var webTestClient: WebTestClient
 
     @Autowired
-    lateinit var repository: CourseRepository
+    lateinit var courseRepository: CourseRepository
+
+    @Autowired
+    lateinit var instructorRepository: InstructorRepository
 
     @BeforeEach
     fun cleanDataBase() {
-        repository.deleteAll()
+        courseRepository.deleteAll()
+        instructorRepository.deleteAll()
     }
 
     @Test
     fun willGetNotFoundIfDeletingANoneExistingCourse() {
-        val errorResponse = webTestClient.delete().uri("/courses/delete/{id}", 22323)
-            .exchange()
-            .expectStatus().isBadRequest.expectBody(String::class.java).returnResult().responseBody
+        val errorResponse =
+            webTestClient.delete().uri("/courses/delete/{id}", 22323).exchange().expectStatus().isBadRequest.expectBody(
+                String::class.java
+            ).returnResult().responseBody
 
         Assertions.assertEquals("Course Not Found", errorResponse!!)
     }
 
     @Test
     fun willDeleteAnExistingCourse() {
-        val deletingCourse = repository.save(Course(null, "x", "y"))
+        val instructor = instructorRepository.save(Instructor(null, "Joe"))
+        val deletingCourse = courseRepository.save(Course(null, "x", "y", instructor))
 
-        val deletedCourse = webTestClient.delete().uri("/courses/delete/{id}", deletingCourse.id)
-            .exchange().expectStatus().isOk.expectBody(
+        val deletedCourse = webTestClient.delete().uri("/courses/delete/{id}", deletingCourse.id).exchange()
+            .expectStatus().isOk.expectBody(
                 String::class.java
             ).returnResult().responseBody
 
@@ -50,10 +58,12 @@ class CourseControllerTest {
 
     @Test
     fun willUpdateExistingCourse() {
-        val updatingCourse = repository.save(Course(null, "x", "y"))
+        val instructor = instructorRepository.save(Instructor(null, "Joe"))
+        val updatingCourse = courseRepository.save(Course(null, "x", "y", instructor))
 
         val updatedCourse = webTestClient.put().uri("/courses/update/{id}", updatingCourse.id)
-            .bodyValue(CourseDto(id = null, name = "a", category = "b")).exchange().expectStatus().isOk.expectBody(
+            .bodyValue(CourseDto(id = null, name = "a", category = "b", instructorId = instructor.id!!)).exchange()
+            .expectStatus().isOk.expectBody(
                 CourseDto::class.java
             ).returnResult().responseBody
 
@@ -64,8 +74,9 @@ class CourseControllerTest {
 
     @Test
     fun willGetNotFoundIfUpdatingANoneExistingCourse() {
+
         val errorResponse = webTestClient.put().uri("/courses/update/{id}", 22323)
-            .bodyValue(CourseDto(id = null, name = "x", category = "y")).exchange()
+            .bodyValue(CourseDto(id = null, name = "x", category = "y", instructorId = -1)).exchange()
             .expectStatus().isBadRequest.expectBody(String::class.java).returnResult().responseBody
 
         Assertions.assertEquals("Course Not Found", errorResponse!!)
@@ -81,7 +92,7 @@ class CourseControllerTest {
 
     @Test
     fun canNotProvideAnIdForANewCourse() {
-        val reqCourseBody: CourseDto = CourseDto(1, "x", "y")
+        val reqCourseBody: CourseDto = CourseDto(1, "x", "y", instructorId = -1)
 
         val exceptionResponse = webTestClient.post().uri("/courses/create").bodyValue(reqCourseBody).exchange()
             .expectStatus().isBadRequest.expectBody(String::class.java).returnResult().responseBody
@@ -92,8 +103,8 @@ class CourseControllerTest {
 
     @Test
     fun shouldCreateANewCourse() {
-        val reqCourseBody: CourseDto = CourseDto(null, "x", "y")
-
+        val instructor = instructorRepository.save(Instructor(null, "Joe"))
+        val reqCourseBody: CourseDto = CourseDto(null, "x", "y", instructorId = instructor.id!!)
 
         val createdCourse = webTestClient.post().uri("/courses/create").bodyValue(reqCourseBody).exchange()
             .expectStatus().is2xxSuccessful.expectBody(CourseDto::class.java).returnResult().responseBody
@@ -105,11 +116,10 @@ class CourseControllerTest {
     @Test
     fun shouldPostAnewCourseWillFailWithInvalidValues() {
 
-        val reqCourseBody: CourseDto = CourseDto(null, "", "")
+        val reqCourseBody: CourseDto = CourseDto(null, "", "", -1)
 
         val allErrors = webTestClient.post().uri("/courses/create").bodyValue(reqCourseBody).exchange()
-            .expectStatus().isBadRequest
-            .expectBody(List::class.java).returnResult().responseBody
+            .expectStatus().isBadRequest.expectBody(List::class.java).returnResult().responseBody
 
 
         Assertions.assertFalse(allErrors!!.isEmpty())

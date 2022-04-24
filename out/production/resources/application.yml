@@ -3,7 +3,7 @@ spring:
     name: firsTimeWithKotlin
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://localhost:5432/courses
     username: postgres
     password: postgres
   # IN MEMORY DB
@@ -13,7 +13,7 @@ spring:
   #    password: password
   jpa:
     database: h2
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    database-platform: org.hibernate.dialect.H2Dialect
     generate-ddl: true
     show-sql: true
   h2:

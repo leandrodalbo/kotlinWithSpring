@@ -26,12 +26,24 @@ class CourseService(val courseRepository: CourseRepository, val courseAdapters: 
 
     }
 
-    fun getAll(): List<CourseDto> {
-        return courseRepository
-            .findAll()
-            .asSequence()
-            .map { courseAdapters.entityToDto(it) }
-            .toList()
+    fun getAll(valueInName: String): List<CourseDto> {
+
+        return when (valueInName.isEmpty()) {
+            true -> {
+                return courseRepository
+                    .findAll()
+                    .asSequence()
+                    .map { courseAdapters.entityToDto(it) }
+                    .toList()
+            }
+            else -> {
+                return courseRepository
+                    .findByNameContaining(valueInName)
+                    .asSequence()
+                    .map { courseAdapters.entityToDto(it) }
+                    .toList()
+            }
+        }
     }
 
     fun updateCourse(id: Int, courseDto: CourseDto): CourseDto {

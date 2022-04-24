@@ -1,0 +1,11 @@
+version: '3.7'
+services:
+  postgres:
+    image: postgres:10.5
+    restart: always
+    environment:
+      - POSGRES_USER=postgres
+      - POSGRES_PASSWORD=postgres
+      - POSGRES_DB=courses
+    ports:
+      - '5432:5432'

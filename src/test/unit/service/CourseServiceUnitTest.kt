@@ -5,10 +5,13 @@ import com.ktprj.dto.CourseDto
 import com.ktprj.service.CourseService
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.junit.jupiter.SpringExtension
 import javax.validation.ConstraintViolationException
 
+@ExtendWith(SpringExtension::class)
 @SpringBootTest(classes = [KtApiApplication::class])
 class CourseServiceUnitTest {
 
@@ -19,7 +22,7 @@ class CourseServiceUnitTest {
     fun shouldValidateACourseBeforeSavingIt() {
 
         assertThrows<ConstraintViolationException> {
-            courseService.newCourse(CourseDto(null, "", ""))
+            courseService.newCourse(CourseDto(null, "", "", 1))
         }
 
     }
@@ -28,7 +31,7 @@ class CourseServiceUnitTest {
     fun shouldValidateTheIdIsNotRequiredToCreate() {
 
         assertThrows<Exception> {
-            courseService.newCourse(CourseDto(234234, "", ""))
+            courseService.newCourse(CourseDto(234234, "", "", 1))
         }
 
     }

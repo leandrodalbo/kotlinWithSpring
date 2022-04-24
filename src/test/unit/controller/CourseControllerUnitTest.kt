@@ -12,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.web.util.UriComponentsBuilder
 
 @WebMvcTest
 @ContextConfiguration(classes = [CourseController::class])
@@ -28,10 +29,11 @@ class CourseControllerUnitTest {
     fun shouldPostAnewCourse() {
 
         every { courseService.newCourse(any()) } returns CourseDto(
-            0, "X", "Y"
+            0, "X", "Y", 1
         )
 
-        val result = webTestClient.post().uri("/courses/create").bodyValue(CourseDto(null, "X", "Y")).exchange()
+        val result = webTestClient.post().uri("/courses/create")
+            .bodyValue(CourseDto(null, "X", "Y", 1)).exchange()
             .expectStatus().is2xxSuccessful.expectBody(CourseDto::class.java).returnResult().responseBody
 
         Assertions.assertEquals(result!!.category, "Y")
@@ -43,12 +45,12 @@ class CourseControllerUnitTest {
     @Test
     fun willGetAll() {
 
-        every { courseService.getAll() }.returnsMany(
+        every { courseService.getAll(any()) }.returnsMany(
             listOf(
                 CourseDto(
-                    0, "X", "Y"
+                    0, "X", "Y", 1
                 ), CourseDto(
-                    1, "A", "B"
+                    1, "A", "B", 1
                 )
 
             )
@@ -61,14 +63,36 @@ class CourseControllerUnitTest {
 
     }
 
+    @Test
+    fun willGetAllWithNameLike() {
+
+        every { courseService.getAll(any()) }.returnsMany(
+            listOf(
+                CourseDto(
+                    0, "axbd", "Y", 1
+                )
+            )
+        )
+
+        val uri = UriComponentsBuilder
+            .fromUriString("/courses/all")
+            .queryParam("x")
+            .toUriString()
+
+        val result = webTestClient.get().uri(uri).exchange()
+            .expectStatus().is2xxSuccessful.expectBody(List::class.java).returnResult().responseBody
+
+        Assertions.assertTrue(result!!.size == 1)
+
+    }
 
     @Test
     fun willUpdateACourse() {
 
-        every { courseService.updateCourse(any(), any()) } returns CourseDto(2235, "X", "Y")
+        every { courseService.updateCourse(any(), any()) } returns CourseDto(2235, "X", "Y", 1)
 
         val result = webTestClient.put().uri("/courses/update/{id}", 2235)
-            .bodyValue(CourseDto(2235, "A", "B"))
+            .bodyValue(CourseDto(2235, "A", "B", 1))
             .exchange()
             .expectStatus().is2xxSuccessful
             .expectBody(CourseDto::class.java).returnResult().responseBody
