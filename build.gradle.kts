@@ -32,8 +32,8 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-webflux")
 
     //db
-    runtimeOnly("org.postgresql:postgresql")
-    //runtimeOnly("com.h2database:h2")
+   // runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly("com.h2database:h2")
 }
 
 tasks.withType<KotlinCompile> {
